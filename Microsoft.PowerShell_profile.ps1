@@ -8,6 +8,9 @@ $pathToPortableGit = (Join-Path $homePath "\AppData\Local\GitHub\PortableGit_c2b
 # Setup Home so that Git doesn't freak out.
 [System.Environment]::SetEnvironmentVariable("HOME", $homePath, "Process")
 
+# Output verbose git status?
+$git_status_verbose = $true
+
 # Setup command aliases
 set-alias s (Join-Path $Env:HomeDrive "\Program Files\Sublime Text 3\sublime_text.exe")
 set-alias ws (Join-Path $Env:HomeDrive "\Program Files (x86)\JetBrains\WebStorm 10.0.4\bin\WebStorm.exe")
@@ -60,6 +63,10 @@ function prompt {
             Write-Host("!") -nonewline -foregroundcolor Yellow
         }
         Write-Host("$") -nonewline -foregroundcolor Yellow
+        Write-Host($has_changes +" "+ $git_status_verbose)
+        if (($has_changes -eq $true) -and ($git_status_verbose -eq $true)) {
+            Write-Host(" - a:" + $git_create_count + ", m:" + $git_update_count + ", r:" + $git_remove_count) -nonewline -foregroundcolor White
+        }
         Write-Host("]") -nonewline -foregroundcolor Gray
     }
 

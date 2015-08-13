@@ -1,3 +1,5 @@
+Import-Module PSReadLine
+
 # General variables
 $homePath = (Join-Path $Env:HomeDrive $Env:HomePath)
 $pathToPortableGit = (Join-Path $homePath "\AppData\Local\GitHub\PortableGit_c2ba306e536fdf878271f7fe636a147ff37326ad")
@@ -12,8 +14,20 @@ $pathToPortableGit = (Join-Path $homePath "\AppData\Local\GitHub\PortableGit_c2b
 $git_status_verbose = $true
 
 # Setup command aliases
+set-alias subl (Join-Path $Env:HomeDrive "\Program Files\Sublime Text 3\sublime_text.exe")
 set-alias s (Join-Path $Env:HomeDrive "\Program Files\Sublime Text 3\sublime_text.exe")
 set-alias ws (Join-Path $Env:HomeDrive "\Program Files (x86)\JetBrains\WebStorm 10.0.4\bin\WebStorm.exe")
+
+# which <app>: Get path for an executable
+function which($app)
+{
+    (Get-Command $app).Definition
+}
+
+# History Search - CTRL-R
+Set-PSReadlineKeyHandler -Key UpArrow -Function HistorySearchBackward
+Set-PSReadlineKeyHandler -Key DownArrow -Function HistorySearchForward
+Set-PSReadlineKeyHandler -Key Tab -Function Complete
 
 $Global:CurrentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent()
 $UserType = "User"
@@ -59,13 +73,29 @@ function prompt {
         Write-Host (" on ") -nonewline -foregroundcolor Gray
         Write-Host ($git_branch) -nonewline -foregroundcolor  Cyan
         Write-Host(" [") -nonewline -foregroundcolor Gray
+        if ($git_status_verbose -eq $true) {
         if ($has_changes -eq $true) {
-            Write-Host("!") -nonewline -foregroundcolor Yellow
+                Write-Host("a") -nonewline -foregroundcolor Yellow
+                Write-Host(":") -nonewline -foregroundcolor Gray
+                Write-Host($git_create_count) -nonewline -foregroundcolor White
+                Write-Host(",") -nonewline -foregroundcolor Gray
+                Write-Host("m") -nonewline -foregroundcolor Yellow
+                Write-Host(":") -nonewline -foregroundcolor Gray
+                Write-Host($git_update_count) -nonewline -foregroundcolor White
+                Write-Host(",") -nonewline -foregroundcolor Gray
+                Write-Host("r") -nonewline -foregroundcolor Yellow
+                Write-Host(":") -nonewline -foregroundcolor Gray
+                Write-Host($git_delete_count) -nonewline -foregroundcolor White
+            }
+            else {
+                Write-Host("$") -nonewline -foregroundcolor Yellow
+            }
         }
-        Write-Host("$") -nonewline -foregroundcolor Yellow
-        Write-Host($has_changes +" "+ $git_status_verbose)
-        if (($has_changes -eq $true) -and ($git_status_verbose -eq $true)) {
-            Write-Host(" - a:" + $git_create_count + ", m:" + $git_update_count + ", r:" + $git_remove_count) -nonewline -foregroundcolor White
+        else {
+            if ($has_changes -eq $true) {
+                Write-Host("!") -nonewline -foregroundcolor Yellow
+            }
+            Write-Host("$") -nonewline -foregroundcolor Yellow
         }
         Write-Host("]") -nonewline -foregroundcolor Gray
     }
